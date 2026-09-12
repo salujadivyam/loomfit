@@ -240,6 +240,7 @@
         </div>
 
         <button class="scan-btn" id="scanBtn">RANK CANDIDATES</button>
+        <button class="export-btn" id="clearBtn" style="width:100%;margin-top:10px;">Clear All Results</button>
         <p class="privacy-note">
           Uploaded resumes are processed only to compute the ranking for this
           session. Files are not stored after scoring is complete.
@@ -435,6 +436,25 @@ fileInput.addEventListener('change', ()=>{
 // ---------- Session handling ----------
 let currentSessionId = '';
 
+// ---------- Clear all results ----------
+document.getElementById('clearBtn').addEventListener('click', async ()=>{
+  if(currentSessionId){
+    try{
+      await fetch('http://localhost:8000/clear', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ session_id: currentSessionId })
+      });
+    }catch(err){
+      // ignore, still clear locally
+    }
+  }
+  currentSessionId = '';
+  fileInput.value = '';
+  fileNameDisplay.textContent = 'No files selected';
+  document.getElementById('rankTableBody').innerHTML = '';
+});
+
 // ---------- Scan / Rank button: calls backend ----------
 const scanBtn = document.getElementById('scanBtn');
 scanBtn.addEventListener('click', async ()=>{
@@ -454,6 +474,7 @@ scanBtn.addEventListener('click', async ()=>{
   const formData = new FormData();
   formData.append('jd', jd);
   formData.append('jd_role', jdRole);
+  formData.append('session_id', currentSessionId);
   for(const f of fileInput.files) formData.append('resumes', f);
 
   try{

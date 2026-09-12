@@ -356,9 +356,14 @@ async def llm_explanation(name: str, matched: List[str], missing: List[str], sco
 
 #routes
 @app.post("/upload")
-async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[UploadFile] = File(...)):
+async def upload(
+    jd: str = Form(...),
+    jd_role: str = Form(""),
+    resumes: List[UploadFile] = File(...),
+    session_id: str = Form(""),
+):
     jd_skills = extract_jd_skills(jd)
-    candidates = []
+    new_candidates = []
     loop = asyncio.get_event_loop()
 
     for f in resumes:
@@ -376,7 +381,7 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
 
         candidate_name = f.filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
 
-        candidates.append({
+        new_candidates.append({
             "name": candidate_name,
             "job": jd_role or "custom",
             "score": final_score,
@@ -389,9 +394,20 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
             "explanation": "",
         })
 
+    # append to an existing session's candidates instead of replacing them,
+    # so uploading a second batch adds to the pool rather than wiping it out
+    existing_session = sessions.get(session_id)
+    if existing_session:
+        candidates = existing_session["rankings"] + new_candidates
+    else:
+        candidates = new_candidates
+        session_id = str(uuid.uuid4())
+
     candidates.sort(key=lambda c: c["score"], reverse=True)
 
     # only generate LLM explanations for top 3, template for the rest (keeps it fast)
+    # re-generate explanations for the current top 3 every time, since a new
+    # upload can shuffle who is in the top 3
     for i, c in enumerate(candidates):
         if i < 3:
             c["explanation"] = await llm_explanation(
@@ -400,10 +416,16 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
         else:
             c["explanation"] = template_explanation(c["name"], c["matched"], c["missing"])
 
-    session_id = str(uuid.uuid4())
     sessions[session_id] = {"rankings": candidates}
 
     return {"session_id": session_id, "rankings": candidates}
+
+
+@app.post("/clear")
+async def clear_session(payload: dict):
+    session_id = payload.get("session_id", "")
+    sessions.pop(session_id, None)
+    return {"cleared": True}
 
 
 @app.get("/rankings")
