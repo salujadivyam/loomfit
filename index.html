@@ -201,23 +201,33 @@
 
         <div class="field-label">Select Job Description</div>
         <select id="jdSelect">
-          <option value="frontend">Frontend Developer Intern</option>
-          <option value="backend">Backend Developer (Node.js)</option>
-          <option value="fullstack">Full Stack Developer Intern</option>
-          <option value="data_analyst">Data Analyst</option>
-          <option value="data_scientist">Data Scientist</option>
-          <option value="ml_engineer">Machine Learning Engineer</option>
-          <option value="devops">DevOps Engineer</option>
-          <option value="qa">QA / Test Engineer</option>
-          <option value="mobile_android">Android Developer</option>
-          <option value="mobile_ios">iOS Developer</option>
-          <option value="ui_ux">UI/UX Designer</option>
-          <option value="cloud">Cloud Engineer (AWS)</option>
-          <option value="cybersecurity">Cybersecurity Analyst</option>
-          <option value="product_manager">Product Manager (Tech)</option>
-          <option value="embedded">Embedded Systems Engineer</option>
-          <option value="dba">Database Administrator</option>
+          <option value="ai_dev">AI Developer</option>
+          <option value="app_dev">App Developer</option>
           <option value="business_analyst">Business Analyst</option>
+          <option value="cloud_devops">Cloud / DevOps</option>
+          <option value="content_creation">Content Creation</option>
+          <option value="cybersecurity">Cybersecurity</option>
+          <option value="data_science">Data Science</option>
+          <option value="designer">Designer</option>
+          <option value="founders_office">Founders Office</option>
+          <option value="hr">Human Resources</option>
+          <option value="it_support">IT Support</option>
+          <option value="marketing">Marketing</option>
+          <option value="python_dev">Python Developer</option>
+          <option value="sales">Sales</option>
+          <option value="sde">Software Development Engineer</option>
+          <option value="social_media">Social Media</option>
+          <option value="video_editing">Video Editing</option>
+          <option value="web_dev">Web Developer</option>
+          <option value="devrel_engineer">Developer Relations Engineer</option>
+          <option value="embedded_systems">Embedded Systems Engineer</option>
+          <option value="finance_intern">Finance Intern</option>
+          <option value="full_stack_developer">Full Stack Developer</option>
+          <option value="game_developer">Game Developer</option>
+          <option value="operations_intern">Operations Intern</option>
+          <option value="product_manager">Product Manager</option>
+          <option value="qa_engineer">QA Engineer</option>
+          <option value="technical_writer">Technical Writer</option>
           <option value="custom">+ Custom / Paste your own JD</option>
         </select>
         <div class="field-label" style="font-weight:400;color:var(--muted);font-size:13px;margin-top:-12px;margin-bottom:10px;">Job description preview (editable)</div>
@@ -292,23 +302,33 @@
     <div class="rank-toolbar">
       <select id="jdFilterSelect">
         <option value="all">All jobs (mixed ranking)</option>
-        <option value="frontend">Frontend Developer Intern</option>
-        <option value="backend">Backend Developer (Node.js)</option>
-        <option value="fullstack">Full Stack Developer Intern</option>
-        <option value="data_analyst">Data Analyst</option>
-        <option value="data_scientist">Data Scientist</option>
-        <option value="ml_engineer">Machine Learning Engineer</option>
-        <option value="devops">DevOps Engineer</option>
-        <option value="qa">QA / Test Engineer</option>
-        <option value="mobile_android">Android Developer</option>
-        <option value="mobile_ios">iOS Developer</option>
-        <option value="ui_ux">UI/UX Designer</option>
-        <option value="cloud">Cloud Engineer (AWS)</option>
-        <option value="cybersecurity">Cybersecurity Analyst</option>
-        <option value="product_manager">Product Manager (Tech)</option>
-        <option value="embedded">Embedded Systems Engineer</option>
-        <option value="dba">Database Administrator</option>
+        <option value="ai_dev">AI Developer</option>
+        <option value="app_dev">App Developer</option>
         <option value="business_analyst">Business Analyst</option>
+        <option value="cloud_devops">Cloud / DevOps</option>
+        <option value="content_creation">Content Creation</option>
+        <option value="cybersecurity">Cybersecurity</option>
+        <option value="data_science">Data Science</option>
+        <option value="designer">Designer</option>
+        <option value="founders_office">Founders Office</option>
+        <option value="hr">Human Resources</option>
+        <option value="it_support">IT Support</option>
+        <option value="marketing">Marketing</option>
+        <option value="python_dev">Python Developer</option>
+        <option value="sales">Sales</option>
+        <option value="sde">Software Development Engineer</option>
+        <option value="social_media">Social Media</option>
+        <option value="video_editing">Video Editing</option>
+        <option value="web_dev">Web Developer</option>
+        <option value="devrel_engineer">Developer Relations Engineer</option>
+        <option value="embedded_systems">Embedded Systems Engineer</option>
+        <option value="finance_intern">Finance Intern</option>
+        <option value="full_stack_developer">Full Stack Developer</option>
+        <option value="game_developer">Game Developer</option>
+        <option value="operations_intern">Operations Intern</option>
+        <option value="product_manager">Product Manager</option>
+        <option value="qa_engineer">QA Engineer</option>
+        <option value="technical_writer">Technical Writer</option>
       </select>
       <button class="export-btn" id="exportBtn">Export CSV</button>
     </div>
@@ -392,23 +412,33 @@ document.querySelectorAll('.navlink').forEach(link=>{
 
 // ---------- JD bank ----------
 const jdBank = {
-  frontend: "Frontend Developer Intern\n\nWe're looking for a Frontend Developer Intern comfortable building responsive interfaces with React and modern CSS. You'll work closely with designers to turn Figma mockups into pixel-accurate, accessible components.\n\nRequired skills: JavaScript (ES6+), React, HTML5, CSS3, Git, responsive design.\nGood to have: TypeScript, Tailwind CSS, REST API integration, testing with Jest.",
-  backend: "Backend Developer (Node.js)\n\nJoin our backend team building scalable REST APIs. You'll design database schemas, write efficient queries, and ensure our services handle production load reliably.\n\nRequired skills: Node.js, Express, REST API design, SQL or MongoDB, Git.\nGood to have: Docker, Redis, authentication/authorization (JWT/OAuth), unit testing.",
-  fullstack: "Full Stack Developer Intern\n\nWork across the stack on a small team, shipping features from database to UI. You'll get exposure to both frontend and backend decision-making in a fast-moving startup environment.\n\nRequired skills: JavaScript, React, Node.js, Express, MongoDB or SQL, Git.\nGood to have: TypeScript, Docker, CI/CD basics, cloud deployment (AWS/Vercel).",
-  data_analyst: "Data Analyst\n\nTurn raw data into decisions. You'll build dashboards, write SQL queries against large datasets, and present findings to non-technical stakeholders.\n\nRequired skills: SQL, Excel, data visualization (Power BI or Tableau), basic statistics.\nGood to have: Python (pandas), A/B testing experience, data storytelling.",
-  data_scientist: "Data Scientist\n\nBuild predictive models and run experiments that directly influence product decisions. You'll partner with engineering to productionize models at scale.\n\nRequired skills: Python, pandas, scikit-learn, SQL, statistics, machine learning fundamentals.\nGood to have: PyTorch or TensorFlow, experiment design, MLOps basics, cloud ML platforms.",
-  ml_engineer: "Machine Learning Engineer\n\nDeploy and maintain ML models in production. You'll own the pipeline from training to serving, focusing on reliability and latency.\n\nRequired skills: Python, PyTorch or TensorFlow, REST APIs, Docker, model deployment.\nGood to have: Kubernetes, MLflow, vector databases, LLM fine-tuning experience.",
-  devops: "DevOps Engineer\n\nOwn our CI/CD pipelines and cloud infrastructure. You'll automate deployments and keep our systems observable and resilient.\n\nRequired skills: Linux, Docker, CI/CD (GitHub Actions/Jenkins), AWS or Azure, scripting (Bash/Python).\nGood to have: Kubernetes, Terraform, monitoring tools (Prometheus/Grafana).",
-  qa: "QA / Test Engineer\n\nEnsure product quality through manual and automated testing. You'll write test plans, catch regressions early, and collaborate with developers on fixes.\n\nRequired skills: manual testing, test case design, bug tracking (Jira), basic SQL.\nGood to have: Selenium or Cypress, API testing (Postman), CI integration.",
-  mobile_android: "Android Developer\n\nBuild and maintain our Android app used by thousands of daily users. You'll work with Kotlin and modern Android architecture components.\n\nRequired skills: Kotlin, Android SDK, MVVM architecture, REST API integration, Git.\nGood to have: Jetpack Compose, Room database, Firebase, unit testing.",
-  mobile_ios: "iOS Developer\n\nDevelop and ship features for our iOS app. You'll work with Swift and SwiftUI in a small, fast-shipping team.\n\nRequired skills: Swift, SwiftUI or UIKit, REST API integration, Git.\nGood to have: Combine, Core Data, TestFlight distribution, unit testing.",
-  ui_ux: "UI/UX Designer\n\nDesign intuitive, accessible interfaces for our web and mobile products. You'll run user research, build wireframes, and hand off polished designs to engineering.\n\nRequired skills: Figma, wireframing, prototyping, user research basics.\nGood to have: design systems, accessibility (WCAG) knowledge, basic HTML/CSS.",
-  cloud: "Cloud Engineer (AWS)\n\nDesign and manage our AWS cloud infrastructure. You'll focus on scalability, security, and cost optimization across services.\n\nRequired skills: AWS (EC2, S3, Lambda), networking basics, Linux, IAM/security groups.\nGood to have: Terraform, CloudFormation, cost optimization experience, certifications.",
-  cybersecurity: "Cybersecurity Analyst\n\nMonitor and respond to security threats across our infrastructure. You'll run vulnerability assessments and help enforce security best practices.\n\nRequired skills: network security fundamentals, vulnerability scanning, SIEM tools, Linux.\nGood to have: penetration testing basics, security certifications (Security+/CEH), scripting.",
-  product_manager: "Product Manager (Tech)\n\nOwn the roadmap for a product area, from discovery to launch. You'll work closely with engineering and design to ship features that matter.\n\nRequired skills: product roadmapping, stakeholder communication, basic SQL, user research.\nGood to have: technical background, A/B testing, agile/scrum experience.",
-  embedded: "Embedded Systems Engineer\n\nDevelop firmware for IoT devices. You'll work close to hardware, optimizing for memory and power constraints.\n\nRequired skills: C/C++, microcontrollers (ARM/AVR), embedded debugging, RTOS basics.\nGood to have: PCB familiarity, communication protocols (I2C/SPI/UART), Python for tooling.",
-  dba: "Database Administrator\n\nKeep our production databases fast, available, and backed up. You'll tune queries and manage schema migrations.\n\nRequired skills: SQL, database tuning, backup/recovery, PostgreSQL or MySQL.\nGood to have: replication setup, monitoring tools, cloud-managed databases (RDS).",
+  ai_dev: "AI Developer\n\nBuild and integrate intelligent features using machine learning and modern AI models. Develop reliable pipelines and APIs that turn prototypes into usable products.\n\nRequired skills: Python, machine learning, deep learning, NLP, REST API, Git.\nGood to have: PyTorch, TensorFlow, vector databases, LLM experience, Docker.",
+  app_dev: "App Developer\n\nBuild and maintain reliable mobile applications with responsive interfaces and clean architecture. Integrate APIs, test features, and collaborate with product and design teams.\n\nRequired skills: Android or iOS development, Kotlin or Swift, REST API integration, Git, testing.\nGood to have: Flutter, React Native, Firebase, UI/UX knowledge.",
   business_analyst: "Business Analyst\n\nBridge business needs and technical solutions. You'll gather requirements, document processes, and support data-driven decisions.\n\nRequired skills: requirements gathering, SQL basics, Excel, process documentation.\nGood to have: Power BI/Tableau, agile ceremonies, stakeholder management.",
+  cloud_devops: "Cloud / DevOps\n\nBuild automated deployment pipelines and manage reliable cloud infrastructure. Improve system scalability, monitoring, security, and operational efficiency.\n\nRequired skills: AWS or Azure, Linux, Docker, CI/CD, Git, scripting.\nGood to have: Kubernetes, Terraform, Jenkins, monitoring and networking.",
+  content_creation: "Content Creation\n\nCreate engaging written and visual content for digital channels while maintaining a consistent brand voice. Plan content, research topics, and measure audience engagement.\n\nRequired skills: content writing, editing, research, communication, social media.\nGood to have: SEO, graphic design, video editing, analytics and content strategy.",
+  cybersecurity: "Cybersecurity\n\nMonitor and respond to security threats across systems and networks. Perform vulnerability assessments and help enforce security best practices.\n\nRequired skills: network security, vulnerability scanning, SIEM, Linux, incident response.\nGood to have: penetration testing, Security+, CEH, Python or Bash scripting.",
+  data_science: "Data Science\n\nAnalyze large datasets and build predictive models that support product and business decisions. Communicate findings and help productionize reliable models.\n\nRequired skills: Python, pandas, NumPy, SQL, statistics, machine learning.\nGood to have: scikit-learn, PyTorch, TensorFlow, Tableau, Power BI and experiment design.",
+  designer: "Designer\n\nCreate intuitive visual experiences for digital products and marketing material. Translate requirements into wireframes, prototypes, and polished designs.\n\nRequired skills: Figma, UI/UX, graphic design, prototyping, visual communication.\nGood to have: Adobe Creative Suite, design systems, accessibility and basic HTML/CSS.",
+  founders_office: "Founders Office\n\nWork directly with company leadership on research, strategy, operations, and high-priority cross-functional initiatives. Turn ambiguous problems into clear plans and measurable outcomes.\n\nRequired skills: analytical thinking, communication, research, project management, Excel.\nGood to have: SQL, finance, operations, presentation and startup experience.",
+  hr: "Human Resources\n\nSupport recruitment, onboarding, employee engagement, and HR operations. Maintain accurate records and communicate effectively with candidates and employees.\n\nRequired skills: recruitment, communication, onboarding, HR operations, Excel.\nGood to have: HRMS, payroll knowledge, labor-law awareness and employee engagement.",
+  it_support: "IT Support\n\nDiagnose hardware, software, account, and network problems for users. Document incidents and resolve support requests efficiently.\n\nRequired skills: troubleshooting, Windows, Linux, networking, technical support.\nGood to have: Active Directory, ticketing systems, cloud administration and cybersecurity basics.",
+  marketing: "Marketing\n\nPlan and execute campaigns that grow awareness, engagement, and qualified demand. Analyze results and improve messaging across digital channels.\n\nRequired skills: digital marketing, campaign management, communication, analytics, content strategy.\nGood to have: SEO, SEM, social media, email marketing and Google Analytics.",
+  python_dev: "Python Developer\n\nDevelop maintainable Python applications, services, and automation tools. Build APIs, work with databases, test code, and collaborate using version control.\n\nRequired skills: Python, object-oriented programming, Git, SQL, REST API.\nGood to have: Django, Flask, FastAPI, pandas, Docker and unit testing.",
+  sales: "Sales\n\nIdentify prospects, understand customer needs, present solutions, and maintain an accurate sales pipeline. Build long-term relationships and consistently work toward revenue targets.\n\nRequired skills: communication, lead generation, negotiation, CRM, relationship management.\nGood to have: market research, presentations, analytics and B2B sales experience.",
+  sde: "Software Development Engineer\n\nDesign, implement, test, and maintain reliable software systems. Solve technical problems and collaborate through code reviews and version control.\n\nRequired skills: data structures, algorithms, object-oriented programming, Git, SQL, software testing.\nGood to have: Java, Python, C++, cloud platforms, Docker and system design.",
+  social_media: "Social Media\n\nPlan, publish, and optimize content across social platforms. Engage communities, monitor trends, and use performance data to improve campaigns.\n\nRequired skills: social media management, content creation, copywriting, communication, analytics.\nGood to have: Canva, video editing, influencer outreach, SEO and paid advertising.",
+  video_editing: "Video Editing\n\nTransform raw footage into clear and engaging videos for digital platforms. Organize media, edit audio and visuals, and deliver content aligned with brand guidelines.\n\nRequired skills: video editing, storytelling, color correction, audio editing, motion graphics.\nGood to have: Adobe Premiere Pro, After Effects, DaVinci Resolve and social media production.",
+  web_dev: "Web Developer\n\nBuild responsive and accessible websites while integrating frontend interfaces with backend services. Test, debug, and maintain web applications.\n\nRequired skills: HTML, CSS, JavaScript, Git, REST API.\nGood to have: React, Node.js, TypeScript, SQL, accessibility and responsive design.",
+  devrel_engineer: "Developer Relations Engineer\n\nHelp developers successfully use technical products through documentation, demos, sample applications, workshops, and community support.\n\nRequired skills: software development, technical writing, public speaking, Git, APIs.\nGood to have: cloud platforms, community management, content creation and open-source contributions.",
+  embedded_systems: "Embedded Systems Engineer\n\nDevelop and debug firmware for resource-constrained devices. Work closely with hardware and communication interfaces to deliver reliable embedded products.\n\nRequired skills: C/C++, microcontrollers, embedded debugging, RTOS, electronics.\nGood to have: ARM, AVR, I2C, SPI, UART, PCB knowledge and Python tooling.",
+  finance_intern: "Finance Intern\n\nSupport financial analysis, reporting, budgeting, and reconciliation activities. Maintain accurate spreadsheets and communicate findings to business stakeholders.\n\nRequired skills: Excel, financial analysis, accounting fundamentals, attention to detail.\nGood to have: Power BI, SQL, financial modelling and presentation skills.",
+  full_stack_developer: "Full Stack Developer\n\nBuild features across frontend, backend, and database layers. Develop responsive interfaces, scalable APIs, and reliable data models.\n\nRequired skills: JavaScript, React, Node.js, REST API, SQL or MongoDB, Git.\nGood to have: TypeScript, Docker, CI/CD, cloud deployment and automated testing.",
+  game_developer: "Game Developer\n\nBuild interactive gameplay systems and optimize performance across target platforms. Collaborate with artists and designers to turn concepts into polished experiences.\n\nRequired skills: C++ or C#, object-oriented programming, game engines, debugging, Git.\nGood to have: Unity, Unreal Engine, 3D mathematics, graphics programming and multiplayer systems.",
+  operations_intern: "Operations Intern\n\nSupport day-to-day business operations, reporting, documentation, and cross-functional coordination. Identify process gaps and help teams execute efficiently.\n\nRequired skills: Excel, communication, data analysis, documentation, attention to detail.\nGood to have: SQL, project management, process improvement and dashboarding.",
+  product_manager: "Product Manager\n\nOwn product discovery, prioritization, and delivery while collaborating with engineering, design, and business teams. Use customer feedback and data to guide decisions.\n\nRequired skills: product roadmapping, stakeholder communication, user research, requirements gathering.\nGood to have: SQL, analytics, A/B testing, agile and technical experience.",
+  qa_engineer: "QA Engineer\n\nEnsure product quality through manual and automated testing. Create test plans, investigate defects, and prevent regressions through close engineering collaboration.\n\nRequired skills: software testing, test cases, bug tracking, API testing, SQL.\nGood to have: Selenium, Cypress, Postman, CI/CD and automation frameworks.",
+  technical_writer: "Technical Writer\n\nCreate clear documentation that helps users and developers understand technical products. Work with subject-matter experts to produce guides, references, and tutorials.\n\nRequired skills: technical writing, editing, research, documentation, communication.\nGood to have: APIs, Markdown, Git, software development and information architecture.",
   custom: ""
 };
 
@@ -435,6 +465,20 @@ fileInput.addEventListener('change', ()=>{
 
 // ---------- Session handling ----------
 let currentSessionId = '';
+let currentRankings = [];
+
+// ---------- Rankings job filter ----------
+const jdFilterSelect = document.getElementById('jdFilterSelect');
+
+function applyJobFilter(){
+  const selectedJob = jdFilterSelect.value;
+  const filteredRankings = selectedJob === 'all'
+    ? currentRankings
+    : currentRankings.filter(candidate => candidate.job === selectedJob);
+  renderRankings(filteredRankings);
+}
+
+jdFilterSelect.addEventListener('change', applyJobFilter);
 
 // ---------- Clear all results ----------
 document.getElementById('clearBtn').addEventListener('click', async ()=>{
@@ -450,9 +494,10 @@ document.getElementById('clearBtn').addEventListener('click', async ()=>{
     }
   }
   currentSessionId = '';
+  currentRankings = [];
   fileInput.value = '';
   fileNameDisplay.textContent = 'No files selected';
-  document.getElementById('rankTableBody').innerHTML = '';
+  applyJobFilter();
 });
 
 // ---------- Scan / Rank button: calls backend ----------
@@ -481,7 +526,9 @@ scanBtn.addEventListener('click', async ()=>{
     const res = await fetch('http://localhost:8000/upload', { method:'POST', body: formData });
     const data = await res.json();
     currentSessionId = data.session_id || '';
-    renderRankings(data.rankings || []);
+    currentRankings = data.rankings || [];
+    jdFilterSelect.value = jdRole;
+    applyJobFilter();
     document.querySelector('.navlink[data-view="rankings"]').click();
   }catch(err){
     console.error(err);
@@ -535,7 +582,8 @@ document.querySelector('.navlink[data-view="rankings"]').addEventListener('click
   try{
     const res = await fetch(`http://localhost:8000/rankings?session_id=${currentSessionId}`);
     const data = await res.json();
-    renderRankings(data.rankings || []);
+    currentRankings = data.rankings || [];
+    applyJobFilter();
   }catch(err){
     // silently ignore if backend not up yet; table stays as last state
   }
