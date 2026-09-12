@@ -4,6 +4,7 @@ import re
 import csv
 import uuid
 import asyncio
+import xml.etree.ElementTree as ET
 from typing import List
 from concurrent.futures import ThreadPoolExecutor
 import requests
@@ -82,6 +83,29 @@ def skill_present(text_lower: str, skill: str) -> bool:
     return pattern.search(text_lower) is not None
 
 #parsing helper
+def extract_xml_text(raw: bytes) -> str:
+    """
+    Pulls all text content out of an XML resume, ignoring tags/attributes.
+    Falls back to a regex tag-strip if the XML is malformed (real-world
+    resume exports are not always well-formed).
+    """
+    try:
+        root = ET.fromstring(raw)
+        parts = []
+        for elem in root.iter():
+            if elem.text and elem.text.strip():
+                parts.append(elem.text.strip())
+            if elem.tail and elem.tail.strip():
+                parts.append(elem.tail.strip())
+        return "\n".join(parts)
+    except ET.ParseError:
+        # malformed XML, fall back to a blunt tag strip so we still get
+        # something usable instead of failing the whole resume
+        text = raw.decode("utf-8", errors="ignore")
+        text = re.sub(r"<[^>]+>", "\n", text)
+        return text
+
+
 def extract_text(filename: str, raw: bytes) -> str:
     name = filename.lower()
     try:
@@ -96,6 +120,8 @@ def extract_text(filename: str, raw: bytes) -> str:
         elif name.endswith(".docx"):
             doc = docx.Document(io.BytesIO(raw))
             return "\n".join(p.text for p in doc.paragraphs)
+        elif name.endswith(".xml"):
+            return extract_xml_text(raw)
         else:  # txt or unknown, best-effort decode
             return raw.decode("utf-8", errors="ignore")
     except Exception as e:
