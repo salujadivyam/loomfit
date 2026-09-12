@@ -40,12 +40,12 @@ executor=ThreadPoolExecutor(max_workers=4)
 sessions:dict={}
 
 # a reasonably broad skill vocabulary used for keyword extraction.
-# JD skills are matched against this list, plus any capitalized/tech-looking
-# tokens pulled directly out of the JD text, so it is not limited to this list
+# Only terms in this curated list are treated as skills. This prevents company
+# names, headings and ordinary capitalized JD words from becoming red tags.
 skillvocab=[
     "python", "java", "javascript", "typescript", "react", "angular", "vue",
     "node.js", "node", "express", "django", "flask", "fastapi", "spring",
-    "html", "css", "tailwind", "bootstrap", "sql", "mysql", "postgresql",
+    "html", "css", "tailwind", "bootstrap", "es6", "json", "sql", "nosql", "mysql", "postgresql",
     "mongodb", "redis", "docker", "kubernetes", "aws", "azure", "gcp",
     "git", "github", "ci/cd", "jenkins", "terraform", "linux", "bash",
     "pandas", "numpy", "scikit-learn", "sklearn", "pytorch", "tensorflow",
@@ -53,7 +53,8 @@ skillvocab=[
     "rest api", "graphql", "microservices", "kotlin", "swift", "android",
     "ios", "figma", "selenium", "cypress", "jira", "excel", "tableau",
     "power bi", "c++", "c#", "golang", "rust", "spark", "hadoop",
-    "elasticsearch", "kafka", "rabbitmq", "oauth", "jwt",
+    "elasticsearch", "kafka", "rabbitmq", "oauth", "jwt", "testing",
+    "jest", "mocha", "agile", "scrum",
 ]
 
 # sorted longest-first so multi-word / longer skills (e.g. "node.js") are
@@ -78,8 +79,27 @@ def build_skill_pattern(skill: str) -> re.Pattern:
 
 skillpattern={skill: build_skill_pattern(skill) for skill in skillvocabsort}
 
+# Alternative technologies named by a JD are one requirement, not several
+# separate missing skills.
+skillgroups={
+    "database (SQL/NoSQL)": ("sql", "nosql", "mysql", "postgresql", "mongodb"),
+    "version control (Git/GitHub)": ("git", "github"),
+    "cloud platform (AWS/GCP/Azure)": ("cloud", "aws", "gcp", "azure"),
+    "testing framework (Jest/Mocha)": ("testing", "jest", "mocha"),
+    "Agile/Scrum": ("agile", "scrum"),
+}
+
+skillaliases={
+    "rest api": ("rest api", "rest apis", "restful api", "restful apis"),
+    "node.js": ("node.js", "nodejs", "node js"),
+}
+
 
 def skill_present(text_lower: str, skill: str) -> bool:
+    if skill in skillgroups:
+        return any(build_skill_pattern(alias).search(text_lower) for alias in skillgroups[skill])
+    if skill in skillaliases:
+        return any(build_skill_pattern(alias).search(text_lower) for alias in skillaliases[skill])
     pattern = skillpattern.get(skill) or build_skill_pattern(skill)
     return pattern.search(text_lower) is not None
 
@@ -163,15 +183,30 @@ def split_sections(resume_text: str) -> dict:
 
 def extract_jd_skills(jd_text: str) -> List[str]:
     jd_lower =jd_text.lower()
-    found= [skill for skill in skillvocabsort if skill_present(jd_lower, skill)]
+    found=[]
+    grouped_aliases=set()
 
-    # also grab capitalized short tokens (likely tool/tech names) not in vocab
-    extra= re.findall(r"\b[A-Z][a-zA-Z0-9+.#]{1,20}\b", jd_text)
-    stop= {"the", "and", "you", "our", "job", "role", "required", "good"}
-    for token in extra:
-        t= token.lower()
-        if t not in found and len(t)> 1 and t not in stop:
-            found.append(t)
+    # Collapse a family only when the JD names at least two alternatives.
+    # A JD asking specifically for PostgreSQL keeps it as an exact skill;
+    # MySQL/PostgreSQL/MongoDB in one JD becomes one database requirement.
+    for label, aliases in skillgroups.items():
+        present_aliases=[
+            alias for alias in aliases
+            if build_skill_pattern(alias).search(jd_lower)
+        ]
+        if len(present_aliases) >= 2:
+            found.append(label)
+            grouped_aliases.update(aliases)
+
+    # Add only curated technical skills. Do not treat every capitalized word
+    # in the JD as a skill (which previously added names, headings and verbs).
+    for skill in skillvocabsort:
+        if skill in grouped_aliases:
+            continue
+        if skill == "node" and skill_present(jd_lower, "node.js"):
+            continue
+        if skill_present(jd_lower, skill):
+            found.append(skill)
 
     # dedupe, keep order
     seen= set()
