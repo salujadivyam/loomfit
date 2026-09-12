@@ -571,17 +571,21 @@ function renderRankings(rankings){
     `;
     tbody.appendChild(row);
 
-    if(isTop3){
-      const explainRow = document.createElement('tr');
-      explainRow.className = 'explain-row';
-      const matched = (c.matched||[]).map(s=>`<span class="tag match">${s}</span>`).join('');
-      const missing = (c.missing||[]).map(s=>`<span class="tag missing">${s}</span>`).join('');
-      explainRow.innerHTML = `<td colspan="5">
-        <div style="margin-bottom:6px;">${c.explanation || 'Explanation pending.'}</div>
-        <div>${matched}${missing}</div>
-      </td>`;
-      tbody.appendChild(explainRow);
-    }
+    // Show matched and missing skill tags for every candidate. The top three
+    // keep the detailed explanation and gold highlight; lower ranks get the
+    // same compact green/red skill-gap format without extra explanation text.
+    const explainRow = document.createElement('tr');
+    explainRow.className = 'explain-row';
+    const matched = (c.matched||[]).map(s=>`<span class="tag match">${s}</span>`).join('');
+    const missing = (c.missing||[]).map(s=>`<span class="tag missing">${s}</span>`).join('');
+    const explanation = isTop3
+      ? `<div style="margin-bottom:6px;">${c.explanation || 'Explanation pending.'}</div>`
+      : '';
+    explainRow.innerHTML = `<td colspan="5">
+      ${explanation}
+      <div>${matched}${missing}</div>
+    </td>`;
+    tbody.appendChild(explainRow);
   });
 }
 
