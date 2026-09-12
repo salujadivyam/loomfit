@@ -227,6 +227,61 @@ async def semantic_score(jd_text: str, resume_text: str) -> int:
     loop=asyncio.get_event_loop()
     return await loop.run_in_executor(executor, _semantic_score_sync, jd_text, resume_text)
 
+
+#experience scoring, total years worked, favors real work history over
+#candidates with skills listed but no experience behind them
+monthre = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*"
+
+# matches ranges like "2019 - 2023", "Jan 2019 - Present", "2020-Present"
+daterangere = re.compile(
+    rf"(?:{monthre}\.?\s*)?(\d{{4}})\s*(?:-|to|–|—)\s*(?:{monthre}\.?\s*)?(\d{{4}}|present|current)",
+    re.IGNORECASE,
+)
+
+# matches explicit statements like "5 years of experience", "3+ yrs experience"
+explicityearsre = re.compile(r"(\d{1,2})\s*\+?\s*(?:years|yrs)\b", re.IGNORECASE)
+
+currentyear = 2026  # update yearly, or swap for datetime.now().year if preferred
+
+
+def extract_experience_years(resume_text: str, sections: dict) -> float:
+    """
+    Estimates total years of work experience two ways and takes the larger,
+    more reliable-looking figure:
+      1. Sum non-overlapping duration ranges found in the experience section
+         (e.g. "2019 - 2022", "Jan 2022 - Present").
+      2. Fall back to any explicit "X years of experience" phrase anywhere
+         in the resume.
+    This is a heuristic, not a guarantee, resumes with no dates or explicit
+    mentions score 0 years and rely purely on semantic/keyword scoring.
+    """
+    exp_text = sections.get("experience", "") or resume_text
+    total_from_ranges = 0.0
+
+    for match in daterangere.finditer(exp_text):
+        start_year = int(match.group(1))
+        end_raw = match.group(2).lower()
+        end_year = currentyear if end_raw in ("present", "current") else int(end_raw)
+        if end_year >= start_year and (end_year - start_year) <= 50:
+            total_from_ranges += (end_year - start_year)
+
+    explicit_years = [int(m.group(1)) for m in explicityearsre.finditer(resume_text)]
+    total_from_explicit = max(explicit_years) if explicit_years else 0
+
+    return max(total_from_ranges, total_from_explicit)
+
+
+def experience_score(years: float, cap_years: float = 8.0) -> int:
+    """
+    Scales years of experience to a 0-100 score. Someone with 0 detected
+    years of work history scores 0 here (they can still score well overall
+    via semantic + keyword), someone at or above cap_years scores 100.
+    """
+    if years <= 0:
+        return 0
+    return min(100, round((years / cap_years) * 100))
+
+
 #explanation
 def template_explanation(name: str, matched: List[str], missing: List[str]) -> str:
     matched_str = ", ".join(matched[:6]) if matched else "no direct skill matches"
@@ -256,13 +311,15 @@ async def call_ollama(prompt: str) -> str:
     return await loop.run_in_executor(executor, _call_ollama_sync, prompt)
 
 
-async def llm_explanation(name: str, matched: List[str], missing: List[str], score: int) -> str:
+async def llm_explanation(name: str, matched: List[str], missing: List[str], score: int, years: float = 0) -> str:
     prompt = (
         f"You are explaining a resume ranking result to a recruiter in 2-3 short sentences. "
         f"Candidate: {name}. Overall score: {score}/100. "
+        f"Estimated years of relevant work experience: {years}. "
         f"Matched skills: {', '.join(matched) if matched else 'none'}. "
         f"Missing skills: {', '.join(missing) if missing else 'none'}. "
-        f"Write a plain, professional explanation of why this candidate ranked here. "
+        f"Write a plain, professional explanation of why this candidate ranked here, "
+        f"mentioning their experience level if it is notably high or low. "
         f"Do not repeat the raw skill lists verbatim, summarize naturally."
     )
     result = await call_ollama(prompt)
@@ -287,7 +344,9 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
 
         k_score, matched, missing = keyword_score(text, sections, jd_skills)
         s_score = await semantic_score(jd, text)
-        final_score = round(0.6 * s_score + 0.4 * k_score)
+        years = extract_experience_years(text, sections)
+        e_score = experience_score(years)
+        final_score = round(0.45 * s_score + 0.35 * k_score + 0.20 * e_score)
 
         candidate_name = f.filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
 
@@ -297,6 +356,8 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
             "score": final_score,
             "semantic": s_score,
             "keyword": k_score,
+            "experience_years": round(years, 1),
+            "experience_score": e_score,
             "matched": matched,
             "missing": missing,
             "explanation": "",
@@ -307,7 +368,9 @@ async def upload(jd: str = Form(...), jd_role: str = Form(""), resumes: List[Upl
     # only generate LLM explanations for top 3, template for the rest (keeps it fast)
     for i, c in enumerate(candidates):
         if i < 3:
-            c["explanation"] = await llm_explanation(c["name"], c["matched"], c["missing"], c["score"])
+            c["explanation"] = await llm_explanation(
+                c["name"], c["matched"], c["missing"], c["score"], c["experience_years"]
+            )
         else:
             c["explanation"] = template_explanation(c["name"], c["matched"], c["missing"])
 
@@ -332,10 +395,11 @@ async def export_csv(session_id: str = ""):
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Rank", "Name", "Job", "Score", "Semantic", "Keyword", "Matched", "Missing", "Explanation"])
+    writer.writerow(["Rank", "Name", "Job", "Score", "Semantic", "Keyword", "Experience Years", "Experience Score", "Matched", "Missing", "Explanation"])
     for i, c in enumerate(rankings):
         writer.writerow([
             i + 1, c["name"], c["job"], c["score"], c["semantic"], c["keyword"],
+            c["experience_years"], c["experience_score"],
             "; ".join(c["matched"]), "; ".join(c["missing"]), c["explanation"],
         ])
     output.seek(0)
@@ -360,7 +424,7 @@ async def chat(payload: dict):
     for i, c in enumerate(rankings[:10]):
         context_lines.append(
             f"{i+1}. {c['name']} - score {c['score']}/100 "
-            f"(semantic {c['semantic']}, keyword {c['keyword']}). "
+            f"(semantic {c['semantic']}, keyword {c['keyword']}, experience {c['experience_years']} yrs). "
             f"Matched: {', '.join(c['matched']) or 'none'}. "
             f"Missing: {', '.join(c['missing']) or 'none'}."
         )
