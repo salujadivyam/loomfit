@@ -525,6 +525,15 @@ scanBtn.addEventListener('click', async ()=>{
   try{
     const res = await fetch('http://localhost:8000/upload', { method:'POST', body: formData });
     const data = await res.json();
+
+    const duplicates = data.duplicates || [];
+    if(duplicates.length){
+      const duplicateMessage = duplicates
+        .map(item => `${item.filename} was flagged as a duplicate of ${item.duplicate_of} (${item.reason})`)
+        .join('\n');
+      alert(`Duplicate resumes detected. The first received resume was kept:\n\n${duplicateMessage}`);
+    }
+
     currentSessionId = data.session_id || '';
     currentRankings = data.rankings || [];
     jdFilterSelect.value = jdRole;

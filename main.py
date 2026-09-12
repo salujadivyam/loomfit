@@ -4,6 +4,7 @@ import re
 import csv
 import uuid
 import asyncio
+import hashlib
 import xml.etree.ElementTree as ET
 from typing import List
 from concurrent.futures import ThreadPoolExecutor
@@ -354,6 +355,42 @@ async def llm_explanation(name: str, matched: List[str], missing: List[str], sco
     return template_explanation(name, matched, missing)
 
 
+# duplicate resume detection
+emailre = re.compile(
+    r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",
+    re.IGNORECASE,
+)
+
+phonere = re.compile(r"(?:\+?\d[\d\s().-]{7,}\d)")
+
+
+def candidate_identity(resume_text: str, raw: bytes):
+    """
+    Identify a candidate by email first, phone second, and exact normalized
+    resume content last. Only the hashed value is stored in the session.
+    """
+    email_match = emailre.search(resume_text)
+    if email_match:
+        email = email_match.group(0).lower()
+        identity = hashlib.sha256(email.encode("utf-8")).hexdigest()
+        return identity, "same email address"
+
+    for phone_match in phonere.finditer(resume_text):
+        phone = re.sub(r"\D", "", phone_match.group(0))
+        if 10 <= len(phone) <= 15:
+            phone = phone[-10:]
+            identity = hashlib.sha256(phone.encode("utf-8")).hexdigest()
+            return identity, "same phone number"
+
+    normalized_text = re.sub(r"\s+", " ", resume_text.lower()).strip()
+    if normalized_text:
+        identity = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
+        return identity, "identical resume content"
+
+    identity = hashlib.sha256(raw).hexdigest()
+    return identity, "identical file content"
+
+
 #routes
 @app.post("/upload")
 async def upload(
@@ -364,13 +401,37 @@ async def upload(
 ):
     jd_skills = extract_jd_skills(jd)
     new_candidates = []
+    new_duplicates = []
     loop = asyncio.get_event_loop()
+
+    existing_session = sessions.get(session_id)
+    if existing_session:
+        seen_candidates = existing_session.get("seen_candidates", {}).copy()
+        duplicate_history = existing_session.get("duplicates", []).copy()
+    else:
+        seen_candidates = {}
+        duplicate_history = []
 
     for f in resumes:
         raw = await f.read()
         # parsing is cheap for txt but pdfplumber/docx can be slow on big files,
         # push it off the event loop too
         text = await loop.run_in_executor(executor, extract_text, f.filename, raw)
+
+        candidate_name = f.filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
+        identity, duplicate_reason = candidate_identity(text, raw)
+        duplicate_key = f"{jd_role or 'custom'}:{identity}"
+
+        if duplicate_key in seen_candidates:
+            new_duplicates.append({
+                "filename": f.filename,
+                "duplicate_of": seen_candidates[duplicate_key],
+                "job": jd_role or "custom",
+                "reason": duplicate_reason,
+            })
+            continue
+
+        seen_candidates[duplicate_key] = candidate_name
         sections = split_sections(text)
 
         k_score, matched, missing = keyword_score(text, sections, jd_skills)
@@ -378,8 +439,6 @@ async def upload(
         years = extract_experience_years(text, sections)
         e_score = experience_score(years)
         final_score = round(0.45 * s_score + 0.35 * k_score + 0.20 * e_score)
-
-        candidate_name = f.filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
 
         new_candidates.append({
             "name": candidate_name,
@@ -396,7 +455,6 @@ async def upload(
 
     # append to an existing session's candidates instead of replacing them,
     # so uploading a second batch adds to the pool rather than wiping it out
-    existing_session = sessions.get(session_id)
     if existing_session:
         candidates = existing_session["rankings"] + new_candidates
     else:
@@ -416,9 +474,17 @@ async def upload(
         else:
             c["explanation"] = template_explanation(c["name"], c["matched"], c["missing"])
 
-    sessions[session_id] = {"rankings": candidates}
+    sessions[session_id] = {
+        "rankings": candidates,
+        "seen_candidates": seen_candidates,
+        "duplicates": duplicate_history + new_duplicates,
+    }
 
-    return {"session_id": session_id, "rankings": candidates}
+    return {
+        "session_id": session_id,
+        "rankings": candidates,
+        "duplicates": new_duplicates,
+    }
 
 
 @app.post("/clear")
