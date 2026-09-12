@@ -431,6 +431,9 @@ fileInput.addEventListener('change', ()=>{
     : 'No files selected';
 });
 
+// ---------- Session handling ----------
+let currentSessionId = '';
+
 // ---------- Scan / Rank button: calls backend ----------
 const scanBtn = document.getElementById('scanBtn');
 scanBtn.addEventListener('click', async ()=>{
@@ -455,6 +458,7 @@ scanBtn.addEventListener('click', async ()=>{
   try{
     const res = await fetch('http://localhost:8000/upload', { method:'POST', body: formData });
     const data = await res.json();
+    currentSessionId = data.session_id || '';
     renderRankings(data.rankings || []);
     document.querySelector('.navlink[data-view="rankings"]').click();
   }catch(err){
@@ -505,8 +509,9 @@ function renderRankings(rankings){
 
 // ---------- Load rankings on rankings view (for standalone testing/demo) ----------
 document.querySelector('.navlink[data-view="rankings"]').addEventListener('click', async ()=>{
+  if(!currentSessionId) return;
   try{
-    const res = await fetch('http://localhost:8000/rankings');
+    const res = await fetch(`http://localhost:8000/rankings?session_id=${currentSessionId}`);
     const data = await res.json();
     renderRankings(data.rankings || []);
   }catch(err){
@@ -516,7 +521,8 @@ document.querySelector('.navlink[data-view="rankings"]').addEventListener('click
 
 // ---------- Export CSV ----------
 document.getElementById('exportBtn').addEventListener('click', ()=>{
-  window.location.href = 'http://localhost:8000/export-csv';
+  if(!currentSessionId){ alert('Rank some candidates first.'); return; }
+  window.location.href = `http://localhost:8000/export-csv?session_id=${currentSessionId}`;
 });
 
 // ---------- Chatbot ----------
@@ -539,7 +545,7 @@ async function sendChat(){
     const res = await fetch('http://localhost:8000/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ question: text })
+      body: JSON.stringify({ question: text, session_id: currentSessionId })
     });
     const data = await res.json();
     appendMsg(data.answer || 'No response.', 'bot');
